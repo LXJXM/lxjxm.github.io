@@ -3,7 +3,7 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
-  title: "Breeze Blog",
+  title: "LXJXM Blog",
   tagline: "Dinosaurs are cool",
   favicon: "img/favicon.ico",
 
@@ -15,8 +15,8 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "facebook", // Usually your GitHub org/user name.
-  projectName: "docusaurus", // Usually your repo name.
+  organizationName: "LXJXM", // Usually your GitHub org/user name.
+  projectName: "lxjxm.github.io", // Usually your repo name.
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -52,10 +52,10 @@ const config: Config = {
     // Replace with your project's social card
     image: "img/docusaurus-social-card.jpg",
     navbar: {
-      title: "Breeze",
+      title: "LXJXM",
       logo: {
         alt: "My Site Logo",
-        src: "img/avatar.jpg",
+        src: "https://github.com/LXJXM.png",
       },
       items: [
         // {
@@ -64,10 +64,10 @@ const config: Config = {
         //   position: "left",
         //   label: "Tutorial",
         // },
-        { to: "/resume", label: "Resume", position: "left" },
-        { to: "/blog", label: "Blog", position: "left" },
+        { to: "/resume", label: "Resume", position: "right" },
+        { to: "/blog", label: "Blog", position: "right" },
         {
-          href: "https://github.com/facebook/docusaurus",
+          href: "https://github.com/LXJXM",
           label: "GitHub",
           position: "right",
         },

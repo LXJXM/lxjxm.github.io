@@ -21,3 +21,7 @@
   align-items: center;
   justify-content: center;
 }
+
+.coverImg {
+  width: 800px;
+}
