@@ -1,9 +1,9 @@
-import clsx from "clsx"
-import Link from "@docusaurus/Link"
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext"
-import Layout from "@theme/Layout"
-import HomepageFeatures from "@site/src/components/HomepageFeatures"
-import Heading from "@theme/Heading"
+import clsx from "clsx";
+import Link from "@docusaurus/Link";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import Layout from "@theme/Layout";
+import HomepageFeatures from "@site/src/components/HomepageFeatures";
+import Heading from "@theme/Heading";
 
 // import styles from "./index.module.css"
 
@@ -30,13 +30,13 @@ import Heading from "@theme/Heading"
 // }
 
 export default function Resume(): JSX.Element {
-	const { siteConfig } = useDocusaurusContext()
-	return (
-		<Layout
-			title={`Hello from ${siteConfig.title}`}
-			description="Description will go into a meta tag in <head />"
-		>
-			你好
-		</Layout>
-	)
+  const { siteConfig } = useDocusaurusContext();
+  return (
+    <Layout
+      title={`Hello from ${siteConfig.title}`}
+      description="Description will go into a meta tag in <head />"
+    >
+      开发中^_^……（敬请期待）
+    </Layout>
+  );
 }
