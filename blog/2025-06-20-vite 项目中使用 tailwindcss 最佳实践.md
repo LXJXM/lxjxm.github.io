@@ -5,7 +5,7 @@ authors: [breeze]
 tags: [vite, tailwindcss]
 ---
 
-
+emoj [快速使用](#快速使用)
 
 ## 安装 & 配置
 **-01-** 
@@ -38,6 +38,8 @@ export default defineConfig({
 在入口 CSS 文件中引入 Tailwind CSS
 
 ```css
+/* src/index.css */
+
 @import "tailwindcss";
 ```
 
@@ -52,6 +54,7 @@ Tailwind CSS IntelliSense 用于提供自动补全、悬停预览、代码检查
 配置vscode插件安装提示，提示其他开发者安装 Tailwind CSS IntelliSense 插件
 ```json
 // .vscode/extensions.json
+
 {
   "recommendations": [
     "bradlc.vscode-tailwindcss"
@@ -132,6 +135,75 @@ pnpm install -D prettier prettier-plugin-tailwindcss
 }
 ```
 
+## 快速使用
+
+**-01-** 安装依赖
+```bash
+pnpm install tailwindcss @tailwindcss/vite clsx tailwind-merge
+```
+```bash
+pnpm install -D prettier prettier-plugin-tailwindcss
+```
+
+**-02-** 配置
+```css
+/* src/index.css */
+@import "tailwindcss";
+```
+
+```ts
+// vite.config.ts
+
+import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    tailwindcss(),
+  ],
+})
+```
+
+```json
+// .vscode/extensions.json
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss"
+  ]
+}
+```
+
+```json
+// .vscode/settings.json
+
+{
+  "tailwindCSS.classFunctions": ["tw", "clsx","twClsx","twMerge","tw\\.[a-z-]+"]
+}
+```
+
+```ts
+// utils/tw.ts
+
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+/**
+ * 合并多个类名
+ * @param inputs
+ * @returns
+ */
+export function twClsx(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+```
+
+```json
+// .prettierrc
+
+{
+  "plugins": ["prettier-plugin-tailwindcss"]
+}
+```
 ## 参考
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 - [Get started with Tailwind CSS](https://tailwindcss.com/docs/installation/using-vite)
