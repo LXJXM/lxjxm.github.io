@@ -1,16 +1,16 @@
 ---
 slug: vite-tailwindcss
-title: vite 项目中使用 tailwindcss 最佳实践
+title: Vite 项目中使用 Tailwind CSS 
 authors: [breeze]
-tags: [vite, tailwindcss]
+tags: [vite, tailwindcss, 最佳实践]
 ---
 
-emoj [快速使用](#快速使用)
+👉 [快速使用](#快速使用)
 
 ## 安装 & 配置
 **-01-** 
 
-安装相关依赖
+安装 tailwindcss 相关依赖
 
 ```bash
 pnpm install tailwindcss @tailwindcss/vite
@@ -51,7 +51,7 @@ Tailwind CSS IntelliSense 用于提供自动补全、悬停预览、代码检查
 
 **-01-**
 
-配置vscode插件安装提示，提示其他开发者安装 Tailwind CSS IntelliSense 插件
+配置 vscode 插件安装提示，提示其他开发者安装 Tailwind CSS IntelliSense 插件
 ```json
 // .vscode/extensions.json
 
