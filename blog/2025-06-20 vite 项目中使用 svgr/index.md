@@ -1,6 +1,6 @@
 ---
-slug: Vite项目中使用SVGR
-title: Vite项目中使用SVGR
+slug: Vite 项目中使用 SVGR
+title: Vite 项目中使用 SVGR
 authors: [breeze]
 tags: [vite, 工程化, 开发体验]
 ---
@@ -79,3 +79,4 @@ function DemoComp(){
 - [SVG 从入门到后悔，怎么不早点学起来（图解版）](https://mp.weixin.qq.com/s/EDbRujFqpIXy4VyP1XH2lw)
 - [tailwindcss svg fill](https://tailwindcss.com/docs/fill)
 - [vite-plugin-svgr](https://github.com/pd4d10/vite-plugin-svgr)
+- [使用svgr在Vite+React+Typescript專案中引入SVG圖檔](https://medium.com/@lisalisa12332180/%E4%BD%BF%E7%94%A8svgr%E5%9C%A8vite-react-typescript%E5%B0%88%E6%A1%88%E4%B8%AD%E5%BC%95%E5%85%A5svg%E5%9C%96%E6%AA%94-9634c2362dc6)

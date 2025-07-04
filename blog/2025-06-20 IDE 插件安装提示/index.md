@@ -1,6 +1,6 @@
 ---
-slug: IDE插件安装提示
-title: IDE插件安装提示
+slug: IDE 插件安装提示
+title: IDE 插件安装提示
 authors: [breeze]
 tags: [vscode, 开发体验]
 ---
