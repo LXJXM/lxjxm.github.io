@@ -1,8 +1,8 @@
 ---
-slug: Vite项目中使用svgr
-title: Vite项目中使用svgr
+slug: Vite项目中使用SVGR
+title: Vite项目中使用SVGR
 authors: [breeze]
-tags: [vite, 工程化 ,开发体验]
+tags: [vite, 工程化, 开发体验]
 ---
 
 ## 背景
@@ -13,20 +13,20 @@ SVG 在前端开发中通常有这几种使用方式
 2. CSS 背景图
 3. 使用 img 标签引入
 
-这里的 svgr 是用来将 SVG 文件转换为 React 组件的工具。
+这里的 SVGR 是用来将 SVG 文件转换为 React 组件的工具。
 
 ## 安装依赖
-```bash
-# vite-plugin-svgr中存在@svgr/plugin-jsx的依赖，所以这里不用安装
-pnpm install vite-plugin-svgr @svgr/plugin-svgo -D
+vite-plugin-svgr 中存在 @svgr/plugin-jsx 的依赖，所以这里不用安装
 
+![@svgr/plugin-jsx](./image-1.png)
+
+```bash
+pnpm install vite-plugin-svgr @svgr/plugin-svgo -D
 ```
 ## 配置
 ```js
 // vite.config.js
-//- @svgr/plugin-svgo：使用 SVGO（SVG Optimizer）优化 SVG 文件，去除不必要的代码，减小文件体积。
-//- @svgr/plugin-jsx：将优化后的 SVG 转换为 React JSX 组件。
-//- svgoConfig-floatPrecision-2：// 设置 SVG 中浮点数的精度为 2 位小数，以此减少文件大小。
+
 import svgr from 'vite-plugin-svgr'
 
 export default defineConfig({
@@ -41,6 +41,10 @@ export default defineConfig({
     })],
 })
 ```
+
+- @svgr/plugin-svgo：使用 SVGO（SVG Optimizer）优化 SVG 文件，去除不必要的代码，减小文件体积。
+- @svgr/plugin-jsx：将优化后的 SVG 转换为 React JSX 组件。
+- svgoConfig-floatPrecision-2：设置 SVG 中浮点数的精度为 2 位小数，以此减少文件大小。
 
 ## 使用
 ```tsx
@@ -57,7 +61,7 @@ function DemoComp(){
 
 将原始文件中的 fill 属性删除
 
-![删除fill属性](./image-1.png)
+![删除fill属性](./image-2.png)
 
 ```tsx
 function DemoComp(){
