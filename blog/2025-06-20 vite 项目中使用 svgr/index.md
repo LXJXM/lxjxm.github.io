@@ -17,15 +17,28 @@ SVG 在前端开发中通常有这几种使用方式
 
 ## 安装依赖
 ```bash
-pnpm install vite-plugin-svgr -D
+# vite-plugin-svgr中存在@svgr/plugin-jsx的依赖，所以这里不用安装
+pnpm install vite-plugin-svgr @svgr/plugin-svgo -D
+
 ```
 ## 配置
 ```js
 // vite.config.js
+//- @svgr/plugin-svgo：使用 SVGO（SVG Optimizer）优化 SVG 文件，去除不必要的代码，减小文件体积。
+//- @svgr/plugin-jsx：将优化后的 SVG 转换为 React JSX 组件。
+//- svgoConfig-floatPrecision-2：// 设置 SVG 中浮点数的精度为 2 位小数，以此减少文件大小。
 import svgr from 'vite-plugin-svgr'
 
 export default defineConfig({
-  plugins: [svgr()],
+    plugins: [svgr({
+        svgrOptions: {
+            plugins: ["@svgr/plugin-svgo", "@svgr/plugin-jsx"],
+            svgoConfig: {
+                floatPrecision: 2,
+            },
+        },
+        // ...
+    })],
 })
 ```
 
@@ -55,7 +68,6 @@ function DemoComp(){
     )
 }
 ```
-
 
 ## 参考
 - [SVG 从入门到后悔，怎么不早点学起来（图解版）](https://mp.weixin.qq.com/s/EDbRujFqpIXy4VyP1XH2lw)
