@@ -12,14 +12,15 @@ tags: [vscode, 开发体验]
 
 <!-- truncate -->
 ## 实现
-**-01-**
+**- *01* -**
+
 
 在插件市场中复制 插件ID
 
 ![复制插件ID](./image-1.png)
 
 
-**-02-**
+**- *02* -**
 
 填写至 `extensions.json` 中
 ```json

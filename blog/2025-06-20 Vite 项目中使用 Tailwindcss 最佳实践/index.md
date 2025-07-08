@@ -10,7 +10,7 @@ tags: [vite, tailwindcss, 最佳实践]
 <!-- truncate -->
 
 ## 安装 & 配置
-**-01-** 
+**- *01* -** 
 
 安装 tailwindcss 相关依赖
 
@@ -18,7 +18,7 @@ tags: [vite, tailwindcss, 最佳实践]
 pnpm install tailwindcss @tailwindcss/vite
 ```
 
-**-02-**
+**- *02* -**
 
 配置 Vite 插件
 
@@ -51,7 +51,7 @@ export default defineConfig({
 ### 插件
 Tailwind CSS IntelliSense 用于提供自动补全、悬停预览、代码检查等功能
 
-**-01-**
+**- *01* -**
 
 配置 vscode 插件安装提示，提示其他开发者安装 Tailwind CSS IntelliSense 插件
 ```json
@@ -63,7 +63,7 @@ Tailwind CSS IntelliSense 用于提供自动补全、悬停预览、代码检查
   ]
 }
 ```
-**-02-**
+**- *02* -**
 
 配置 `tailwindCSS.classFunctions` ，开启类名函数提示。
 
@@ -87,14 +87,14 @@ Tailwind CSS IntelliSense 用于提供自动补全、悬停预览、代码检查
 - `tailwind-merge`: 一个用于智能合并 Tailwind CSS 类名的库，它可以避免类名冲突，确保样式按预期生效。
 
 
-**-01-**
+**- *01* -**
 
 安装依赖
 ```bash
 pnpm install clsx tailwind-merge
 ```
 
-**-02-**
+**- *02* -**
 
 封装工具函数
 ```ts
@@ -118,14 +118,14 @@ export function twClsx(...inputs: ClassValue[]) {
 
 使用 `@prettier/plugin-tailwindcss` 插件，可以完美解决令人头疼的排序问题。
 
-**-01-**
+**- *01* -** 
 
 安装依赖
 ```bash
 pnpm install -D prettier prettier-plugin-tailwindcss
 ```
 
-**-02-**
+**- *02* -**
 
 配置 `prettier` 插件
 
@@ -139,7 +139,7 @@ pnpm install -D prettier prettier-plugin-tailwindcss
 
 ## 快速使用
 
-**-01-** 安装依赖
+**- *01* -** 安装依赖
 ```bash
 pnpm install tailwindcss @tailwindcss/vite clsx tailwind-merge
 ```
@@ -147,7 +147,7 @@ pnpm install tailwindcss @tailwindcss/vite clsx tailwind-merge
 pnpm install -D prettier prettier-plugin-tailwindcss
 ```
 
-**-02-** 配置
+**- *02* -** 配置
 ```css
 /* src/index.css */
 @import "tailwindcss";
