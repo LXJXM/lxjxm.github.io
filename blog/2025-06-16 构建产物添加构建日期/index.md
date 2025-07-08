@@ -71,6 +71,7 @@ pnpm install webpack -D
 ```js
     // webpack.common.js
     const HtmlWebpackPlugin = require('html-webpack-plugin');
+    // highlight-next-line
     const webpack = require('webpack');
 
     module.exports = {
@@ -80,9 +81,11 @@ pnpm install webpack -D
           template: './src/index.html', // 你的 HTML 模板文件
           // 其他配置项
         }),
+        // highlight-start
         new webpack.DefinePlugin({
           'BUILD_TIME': JSON.stringify(new Date().toLocaleString())
-        })
+        }),
+        // highlight-end
       ],
     };
 ```
@@ -91,6 +94,7 @@ pnpm install webpack -D
     <html>
         <head>
             <meta charset="UTF-8">
+            <!--  highlight-next-line -->
             <meta name="build-time" content="<%= BUILD_TIME %>" />
             <title>Webpack Example</title>
         </head>

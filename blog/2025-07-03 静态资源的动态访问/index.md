@@ -60,7 +60,7 @@ const WeatherIcon = ({ weatherState }) => {
 
 ```js
 // 工作原理
-Vite 会将代码
+
 const WeatherIcon = ({ weatherState }) => {
   const iconUrl = new URL(`../assets/${weatherState}.webp`, import.meta.url);
 
