@@ -1,7 +1,5 @@
-import clsx from "clsx";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
-import styles from "./index.module.css";
 import bg from "../../static/img/bg.jpg";
 
 export default function Home(): JSX.Element {
@@ -11,16 +9,12 @@ export default function Home(): JSX.Element {
       title={`Hello from ${siteConfig.title}`}
       description="Description will go into a meta tag in <head />"
     >
-      <main
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          height: "80vh",
-          alignItems: "center",
-        }}
-      >
-        <img className={clsx(styles.coverImg)} src={bg} alt="" />
-      </main>
+      <img
+        className="w-96 select-none absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2"
+        src={bg}
+        alt=""
+        draggable={false}
+      />
     </Layout>
   );
 }

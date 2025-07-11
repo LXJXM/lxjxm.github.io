@@ -1,6 +1,7 @@
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import tailwindPlugin from "./plugins/tailwind-config.cjs";
 
 const config: Config = {
   title: "LXJXM Blog",
@@ -60,10 +61,10 @@ const config: Config = {
     // Replace with your project's social card
     image: "img/docusaurus-social-card.jpg",
     navbar: {
-      title: "LXJXM",
       logo: {
         alt: "My Site Logo",
-        src: "https://github.com/LXJXM.png",
+        src: "img/logo.svg",
+        className: "navbar__logo-img",
       },
       items: [
         // {
@@ -72,10 +73,10 @@ const config: Config = {
         //   position: "left",
         //   label: "Tutorial",
         // },
-        { to: "/resume", label: "Resume", position: "right" },
+        // { to: "/resume", label: "Resume", position: "right" },
         { to: "/blog", label: "Blog", position: "right" },
         {
-          href: "https://github.com/LXJXM",
+          to: "https://github.com/LXJXM",
           label: "GitHub",
           position: "right",
         },
@@ -131,6 +132,8 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
     },
   } satisfies Preset.ThemeConfig,
+
+  plugins: [tailwindPlugin],
 };
 
 export default config;
