@@ -1,8 +1,8 @@
 ---
-slug: markdown-syntax
-title: Markdown - 语法总结
+slug: Markdown 语法总结
+title: Markdown 语法总结
 authors: [breeze]
-tags: [Markdown, 书写规范]
+tags: [Markdown, 最佳实践]
 ---
 
 <!-- truncate -->
