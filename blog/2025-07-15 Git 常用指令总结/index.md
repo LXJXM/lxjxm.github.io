@@ -2,7 +2,7 @@
 slug: Git 常用指令总结
 title: Git 常用指令总结
 authors: [breeze]
-tags: [CSS]
+tags: [Git]
 ---
 
 ## 删除分支
