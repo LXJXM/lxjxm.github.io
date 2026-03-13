@@ -75,6 +75,7 @@ const config: Config = {
         // },
         // { to: "/resume", label: "Resume", position: "right" },
         { to: "/blog", label: "Blog", position: "right" },
+        { to: "/weekly", label: "Weekly", position: "right" },
         {
           to: "https://github.com/LXJXM",
           label: "GitHub",

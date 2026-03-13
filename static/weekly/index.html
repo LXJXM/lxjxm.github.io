@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>周报生成器</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f2eb;
+  --bg2: #ede9e0;
+  --surface: #ffffff;
+  --surface2: #f9f7f3;
+  --border: #d8d0c0;
+  --border2: #c8bfaa;
+  --text: #1a1612;
+  --text2: #5a5248;
+  --text3: #8a8278;
+  --accent: #2d5a3d;
+  --accent-light: #e8f2eb;
+  --warn: #b85c00;
+  --warn-light: #fef3e8;
+  --danger: #9b1c1c;
+  --danger-light: #fef2f2;
+  --ok: #1a4a2e;
+  --ok-light: #dcf0e4;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --radius: 8px;
+  --transition: all 0.2s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Serif SC', serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  background-image: 
+    radial-gradient(ellipse at 20% 20%, rgba(45,90,61,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(184,92,0,0.03) 0%, transparent 60%);
+}
+
+/* ── Header ── */
+.app-header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.app-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-title::before {
+  content: '◆';
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.week-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text2);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 4px;
+}
+
+.user-badge {
+  font-size: 14px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: var(--transition);
+}
+.user-badge:hover { background: var(--bg2); }
+
+/* ── Layout ── */
+.app-body {
+  max-width: 960px;
+  padding: 32px 24px;
+  padding-right: 0;
+  margin-right: 380px;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  position: fixed;
+  top: 72px;
+  right: 24px;
+  width: 340px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+/* ── Hours Card ── */
+.hours-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.hours-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.hours-used {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 36px;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.hours-sep { font-size: 20px; color: var(--text3); margin: 0 2px; }
+
+.hours-total-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  color: var(--text3);
+}
+
+.hours-remaining {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 14px;
+  min-height: 20px;
+  font-weight: 500;
+}
+
+.hours-bar-track {
+  height: 8px;
+  background: var(--bg2);
+  border-radius: 4px;
+  overflow: visible;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.hours-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease, background-color 0.3s ease;
+  position: relative;
+}
+
+.hours-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: -3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: inherit;
+  border: 2px solid var(--surface);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease;
+}
+
+.hours-status {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.total-hours-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.total-hours-label {
+  font-size: 12px;
+  color: var(--text3);
+  white-space: nowrap;
+}
+
+.total-hours-input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg2);
+  color: var(--text);
+  text-align: center;
+}
+
+.total-hours-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+/* ── Preview Card ── */
+.preview-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.preview-content {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.8;
+  color: var(--text2);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 160px;
+  overflow-y: auto;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.preview-content::-webkit-scrollbar { width: 4px; }
+.preview-content::-webkit-scrollbar-track { background: transparent; }
+.preview-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+.btn-row .btn {
+  flex: 1;
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+.btn {
+  padding: 9px 16px;
+  border-radius: 4px;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: #234830; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45,90,61,0.3); }
+
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--bg2); border-color: var(--border2); }
+
+.btn-accent {
+  background: var(--warn-light);
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  font-weight: 700;
+}
+.btn-accent:hover { background: var(--warn); color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(184,92,0,0.25); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text3);
+  border: 1px dashed var(--border2);
+  font-size: 12px;
+}
+.btn-ghost:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
+.btn-clear:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-light); }
+
+/* ── Main Content ── */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Section ── */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.section-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.section-dot.next { background: var(--warn); }
+
+.section-body { padding: 16px 20px; }
+
+/* ── Module Group ── */
+.module-group {
+  margin-bottom: 20px;
+}
+
+.module-group:last-child { margin-bottom: 0; }
+
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.module-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.module-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sub-group {
+  margin-left: 16px;
+  margin-bottom: 12px;
+}
+
+.sub-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sub-label::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--border2);
+}
+
+/* ── Task Row ── */
+.task-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 100px auto auto;
+  gap: 8px;
+  align-items: start;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  transition: var(--transition);
+  animation: slideIn 0.2s ease;
+}
+
+.task-row.next-task {
+  grid-template-columns: 1fr 80px auto;
+  background: var(--warn-light);
+  border-color: #e8c88a;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.task-row:hover { border-color: var(--border2); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+.task-input {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+  transition: var(--transition);
+}
+
+.task-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(45,90,61,0.08);
+}
+
+.task-input::placeholder { color: var(--text3); }
+
+.progress-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.progress-input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 6px 22px 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+  text-align: right;
+}
+
+.progress-input:focus { outline: none; border-color: var(--accent); }
+
+.progress-pct {
+  position: absolute;
+  right: 7px;
+  font-size: 11px;
+  color: var(--text3);
+  pointer-events: none;
+}
+
+.progress-mini-bar {
+  height: 3px;
+  background: var(--bg2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-mini-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* ── Status Select ── */
+.status-wrap {
+  position: relative;
+}
+
+.status-select {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8278'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+.status-select:focus { outline: none; border-color: var(--accent); }
+
+.hours-input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 6px 22px 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+  text-align: right;
+}
+
+.hours-input:focus { outline: none; border-color: var(--accent); }
+
+.hours-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.hours-suffix {
+  position: absolute;
+  right: 7px;
+  font-size: 11px;
+  color: var(--text3);
+  pointer-events: none;
+}
+
+.task-actions {
+  display: flex;
+  gap: 2px;
+  align-self: center;
+}
+
+.task-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: var(--transition);
+}
+
+.task-clone {
+  color: var(--text3);
+}
+.task-clone:hover { color: var(--accent); background: var(--accent-light); }
+
+.task-delete {
+  color: var(--text3);
+}
+.task-delete:hover { color: var(--danger); background: var(--danger-light); }
+
+/* ── Add Task Bar ── */
+.add-task-bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.add-select {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8278'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+
+.add-select:focus { outline: none; border-color: var(--accent); }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  width: 520px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 6px;
+  letter-spacing: 0.06em;
+}
+
+.form-input {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--text);
+  width: 100%;
+  transition: var(--transition);
+}
+
+.form-input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+
+.module-config-list {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.module-config-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.module-config-item:last-child { border-bottom: none; }
+
+.module-config-name {
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.sub-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sub-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sub-tag-del {
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 13px;
+  line-height: 1;
+}
+.sub-tag-del:hover { color: var(--danger); }
+
+.add-module-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 500;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  white-space: nowrap;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ── Empty State ── */
+.empty-state {
+  text-align: center;
+  padding: 24px;
+  color: var(--text3);
+  font-size: 13px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+}
+
+/* ── Setup Screen ── */
+.setup-screen {
+  max-width: 480px;
+  margin: 60px auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+}
+
+.setup-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.setup-sub {
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.divider {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  position: relative;
+  margin: 20px 0;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: var(--border);
+}
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ── Responsive ── */
+@media (max-width: 800px) {
+  .app-body { margin-right: 0; padding-right: 24px; }
+  .sidebar { position: static; width: auto; top: auto; right: auto; bottom: auto; overflow-y: visible; }
+  .task-row { grid-template-columns: 1fr; }
+  .task-row.next-task { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let config = null;  // { userName, totalHours, modules: [{name, subs:[]}] }
+let currentWeekTasks = [];  // [{id, module, sub, desc, progress, status, hours}]
+let nextWeekTasks = [];     // [{id, module, sub, desc, progress}]
+
+// ─── Utils ───────────────────────────────────────────────────────────────────
+function getWeekDates() {
+  const today = new Date();
+  const day = today.getDay(); // 0=Sun, 1=Mon ... 5=Fri, 6=Sat
+  const diffToFri = (5 - day + 7) % 7;
+  const friday = new Date(today);
+  friday.setDate(today.getDate() + diffToFri);
+  const monday = new Date(friday);
+  monday.setDate(friday.getDate() - 4);
+  const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return { monday: fmt(monday), friday: fmt(friday), fridayDate: friday };
+}
+
+function uid() { return Math.random().toString(36).slice(2,9); }
+
+function getStatusOptions(progress) {
+  const p = parseInt(progress) || 0;
+  if (p < 80) return [{ value: '进行中', locked: true }];
+  if (p < 90) return [{ value: '联调中', locked: false }, { value: '进行中', locked: false }];
+  if (p < 100) return [{ value: '已提测', locked: false }, { value: '进行中', locked: false }];
+  return [{ value: '已上线', locked: false }, { value: '已完成', locked: false }];
+}
+
+function getDefaultStatus(progress) {
+  const p = parseInt(progress) || 0;
+  if (p < 80) return '进行中';
+  if (p < 90) return '联调中';
+  if (p < 100) return '已提测';
+  return '已上线';
+}
+
+function getProgressColor(p) {
+  if (p < 80) return '#2d5a3d';
+  if (p < 90) return '#b85c00';
+  if (p < 100) return '#1a6a8a';
+  return '#1a4a2e';
+}
+
+function showToast(msg, duration = 2000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem('weeklyReportConfig');
+    if (raw) { config = JSON.parse(raw); return true; }
+  } catch(e) {}
+  return false;
+}
+
+function saveConfig() {
+  localStorage.setItem('weeklyReportConfig', JSON.stringify(config));
+}
+
+function loadTasks() {
+  try {
+    const { friday } = getWeekDates();
+    const raw = localStorage.getItem(`weeklyTasks_${friday}`);
+    if (raw) {
+      const data = JSON.parse(raw);
+      currentWeekTasks = data.current || [];
+      nextWeekTasks = data.next || [];
+      return;
+    }
+    // Try to load from previous week
+    const prevFriday = new Date(getWeekDates().fridayDate);
+    prevFriday.setDate(prevFriday.getDate() - 7);
+    const pfmt = `${prevFriday.getFullYear()}-${String(prevFriday.getMonth()+1).padStart(2,'0')}-${String(prevFriday.getDate()).padStart(2,'0')}`;
+    const prevRaw = localStorage.getItem(`weeklyTasks_${pfmt}`);
+    if (prevRaw) {
+      const prevData = JSON.parse(prevRaw);
+      // Carry over incomplete tasks
+      currentWeekTasks = (prevData.next || []).map(t => ({
+        ...t, id: uid(), hours: '', status: getDefaultStatus(t.progress)
+      }));
+    }
+  } catch(e) {}
+}
+
+function syncUnfinishedToNextWeek() {
+  for (const task of currentWeekTasks) {
+    if (!task.desc) continue;
+    const inNext = nextWeekTasks.find(t => t.module === task.module && t.sub === task.sub && t.desc === task.desc);
+    if (task.progress > 0 && task.progress < 100) {
+      if (!inNext) {
+        nextWeekTasks.push({ id: uid(), module: task.module, sub: task.sub, desc: task.desc, progress: task.progress, status: task.status });
+      } else {
+        inNext.progress = task.progress;
+        inNext.status = task.status;
+      }
+    } else {
+      // progress is 100%, remove from next week if it was auto-added
+      if (inNext) {
+        nextWeekTasks = nextWeekTasks.filter(t => t.id !== inNext.id);
+      }
+    }
+  }
+}
+
+function saveTasks() {
+  const { friday } = getWeekDates();
+  localStorage.setItem(`weeklyTasks_${friday}`, JSON.stringify({
+    current: currentWeekTasks,
+    next: nextWeekTasks
+  }));
+}
+
+// ─── Report Generation ────────────────────────────────────────────────────────
+function generateReport() {
+  const { monday, friday } = getWeekDates();
+  const TAB_WIDTH = 4;
+
+  // Collect all tasks with desc for column width calculation
+  const allCurrent = currentWeekTasks.filter(t => t.desc);
+  const allNext = nextWeekTasks.filter(t => t.desc);
+  const allTasks = [...allCurrent, ...allNext];
+
+  // Calculate max lengths for alignment (prefix "- " is 2 chars)
+  const maxDescLen = allTasks.reduce((max, t) => Math.max(max, (`- ${t.desc}`).length), 0);
+  const maxProgressLen = allTasks.reduce((max, t) => Math.max(max, `${t.progress}%`.length), 0);
+  const maxStatusLen = allTasks.reduce((max, t) => Math.max(max, (t.status || '').length), 0);
+
+  // Calculate tab stop positions
+  const descTabStop = Math.ceil((maxDescLen + 1) / TAB_WIDTH) * TAB_WIDTH;
+  const progressTabStop = Math.ceil((maxProgressLen + 1) / TAB_WIDTH) * TAB_WIDTH;
+  const statusTabStop = Math.ceil((maxStatusLen + 1) / TAB_WIDTH) * TAB_WIDTH;
+
+  function tabPad(str, tabStop) {
+    const len = str.length;
+    const spaces = Math.max(TAB_WIDTH, Math.ceil((tabStop - len) / TAB_WIDTH) * TAB_WIDTH);
+    return ' '.repeat(spaces);
+  }
+
+  function formatCurrentTask(t) {
+    const desc = `- ${t.desc}`;
+    const progress = `${t.progress}%`;
+    const status = t.status || '';
+    const hours = `${t.hours}h`;
+    return `        ${desc}${tabPad(desc, descTabStop)}${progress}${tabPad(progress, progressTabStop)}${status}${tabPad(status, statusTabStop)}${hours}`;
+  }
+
+  function formatNextTask(t) {
+    const desc = `- ${t.desc}`;
+    const progress = `${t.progress}%`;
+    return `        ${desc}${tabPad(desc, descTabStop)}${progress}`;
+  }
+
+  let lines = [];
+  lines.push(`本周工作（${monday} ~ ${friday}）`);
+
+  const grouped = groupByModule(currentWeekTasks);
+  let modIdx = 1;
+  for (const [mod, subs] of Object.entries(grouped)) {
+    lines.push(`${modIdx}.${mod}`);
+    for (const [sub, tasks] of Object.entries(subs)) {
+      lines.push(`    ${sub}`);
+      for (const t of tasks) {
+        lines.push(formatCurrentTask(t));
+      }
+    }
+    modIdx++;
+  }
+
+  lines.push('');
+  lines.push('下周工作');
+  const grouped2 = groupByModule(nextWeekTasks);
+  modIdx = 1;
+  for (const [mod, subs] of Object.entries(grouped2)) {
+    lines.push(`${modIdx}.${mod}`);
+    for (const [sub, tasks] of Object.entries(subs)) {
+      lines.push(`    ${sub}`);
+      for (const t of tasks) {
+        lines.push(formatNextTask(t));
+      }
+    }
+    modIdx++;
+  }
+
+  return lines.join('\n');
+}
+
+function groupByModule(tasks) {
+  const result = {};
+  for (const t of tasks) {
+    if (!t.desc) continue;
+    if (!result[t.module]) result[t.module] = {};
+    if (!result[t.module][t.sub]) result[t.module][t.sub] = [];
+    result[t.module][t.sub].push(t);
+  }
+  return result;
+}
+
+function calcTotalHours() {
+  return currentWeekTasks.reduce((sum, t) => sum + (parseFloat(t.hours) || 0), 0);
+}
+
+// ─── Import ──────────────────────────────────────────────────────────────────
+function parseReportFile(text) {
+  const lines = text.split('\n');
+  const tasks = [];
+  let currentModule = '';
+  let currentSub = '';
+  let inCurrentWeek = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Detect "本周工作" header
+    if (trimmed.startsWith('本周工作')) { inCurrentWeek = true; continue; }
+    // Stop at "下周工作"
+    if (trimmed.startsWith('下周工作')) break;
+
+    if (!inCurrentWeek) continue;
+
+    // Module line: "1.游戏库" or "2.活动中心"
+    const modMatch = trimmed.match(/^\d+\.(.+)$/);
+    if (modMatch) { currentModule = modMatch[1].trim(); currentSub = ''; continue; }
+
+    // Task line: starts with "- " (after stripping leading tabs/spaces)
+    if (trimmed.startsWith('- ')) {
+      // Parse: "- desc  TABs  progress%  TABs  status  TABs  hoursh"
+      // Split by multiple spaces or tabs
+      // Split by tabs or 2+ consecutive spaces to support both TAB and space-separated formats
+      const parts = trimmed.substring(2).split(/\t+| {2,}/).map(s => s.trim()).filter(Boolean);
+      const desc = parts[0] || '';
+      let progress = 0, status = '进行中', hours = '';
+
+      for (let i = 1; i < parts.length; i++) {
+        const p = parts[i];
+        if (/^\d+%$/.test(p)) { progress = parseInt(p); }
+        else if (/^\d+(\.\d+)?h$/i.test(p)) { hours = p.replace(/h$/i, ''); }
+        else if (p) { status = p; }
+      }
+
+      if (!status) status = getDefaultStatus(progress);
+
+      tasks.push({ module: currentModule, sub: currentSub, desc, progress, status, hours });
+      continue;
+    }
+
+    // Sub-category line: anything else that isn't a module or task
+    if (currentModule && !trimmed.startsWith('-')) {
+      currentSub = trimmed;
+    }
+  }
+  return tasks;
+}
+
+function importLastWeekReport(fileText) {
+  const parsed = parseReportFile(fileText);
+  if (!parsed.length) { showToast('未解析到任务数据'); return; }
+
+  // Ensure modules/subs exist in config
+  for (const t of parsed) {
+    let mod = config.modules.find(m => m.name === t.module);
+    if (!mod) {
+      mod = { name: t.module, subs: [] };
+      config.modules.push(mod);
+    }
+    if (t.sub && !mod.subs.includes(t.sub)) {
+      mod.subs.push(t.sub);
+    }
+  }
+  saveConfig();
+
+  // Add tasks to currentWeekTasks
+  for (const t of parsed) {
+    currentWeekTasks.push({
+      id: uid(),
+      module: t.module,
+      sub: t.sub,
+      desc: t.desc,
+      progress: t.progress,
+      status: t.status,
+      hours: t.hours
+    });
+  }
+
+  saveTasks();
+  render();
+  showToast(`已导入 ${parsed.length} 条任务 ✓`);
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+  if (!config) {
+    app.innerHTML = renderSetup();
+    bindSetupEvents();
+    return;
+  }
+  syncUnfinishedToNextWeek();
+  app.innerHTML = renderMain();
+  bindMainEvents();
+  updateHoursDisplay();
+  updatePreview();
+}
+
+function renderSetup() {
+  return `
+  <div style="padding:24px">
+    <div class="setup-screen">
+      <div class="setup-title">◆ 周报生成器</div>
+      <div class="setup-sub">初次使用，请先设置你的基本信息和常用模块分类。</div>
+      
+      <div class="form-group">
+        <label class="form-label">你的名字</label>
+        <input class="form-input" id="setup-name" placeholder="例如：李嘉明" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">默认总工时（小时/周）</label>
+        <input class="form-input" id="setup-hours" type="number" value="40" min="1" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">模块与子类别</label>
+        <div id="setup-modules-list"></div>
+        <div class="add-module-row">
+          <input class="form-input" id="setup-new-module" placeholder="新模块名称" style="flex:1" />
+          <button class="btn btn-secondary" id="setup-add-module" style="white-space:nowrap;padding:8px 14px;font-size:12px">+ 添加模块</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="setup-save" style="width:100%;margin-top:8px">开始使用 →</button>
+
+      <div class="divider">或者</div>
+      <div>
+        <input type="file" id="setup-import-file" accept=".json" style="display:none" />
+        <button class="btn btn-secondary" id="setup-import-btn" style="width:100%;font-size:13px">导入已有配置文件</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+let setupModules = [];
+
+function bindSetupEvents() {
+  setupModules = [];
+  renderSetupModules();
+
+  document.getElementById('setup-add-module').onclick = () => {
+    const inp = document.getElementById('setup-new-module');
+    const name = inp.value.trim();
+    if (!name) return;
+    if (setupModules.find(m => m.name === name)) { showToast('模块已存在'); return; }
+    setupModules.push({ name, subs: [] });
+    inp.value = '';
+    renderSetupModules();
+  };
+
+  document.getElementById('setup-save').onclick = () => {
+    const name = document.getElementById('setup-name').value.trim();
+    const hours = parseInt(document.getElementById('setup-hours').value) || 40;
+    if (!name) { showToast('请输入你的名字'); return; }
+    config = { userName: name, totalHours: hours, modules: setupModules.length ? setupModules : [
+      { name: '游戏库', subs: ['新游', '中台', '活动'] }
+    ]};
+    saveConfig();
+    loadTasks();
+    render();
+  };
+
+  document.getElementById('setup-import-btn').onclick = () => document.getElementById('setup-import-file').click();
+  document.getElementById('setup-import-file').onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        config = JSON.parse(ev.target.result);
+        saveConfig();
+        loadTasks();
+        render();
+        showToast('配置导入成功');
+      } catch(err) { showToast('配置文件格式错误'); }
+    };
+    reader.readAsText(file);
+  };
+}
+
+function renderSetupModules() {
+  const el = document.getElementById('setup-modules-list');
+  if (!el) return;
+  if (!setupModules.length) {
+    el.innerHTML = '<div class="empty-state" style="margin-bottom:10px">暂无模块，添加后可配置子类别</div>';
+    return;
+  }
+  el.innerHTML = `<div class="module-config-list" style="margin-bottom:10px">${
+    setupModules.map((m, mi) => `
+      <div class="module-config-item">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div class="module-config-name">${m.name}</div>
+          <span style="font-size:11px;color:var(--text3);cursor:pointer" data-del-mod="${mi}">✕ 删除</span>
+        </div>
+        <div class="sub-tags">
+          ${m.subs.map((s,si) => `<span class="sub-tag">${s}<span class="sub-tag-del" data-del-sub="${mi}-${si}">×</span></span>`).join('')}
+          <span class="sub-tag" style="cursor:pointer;border-style:dashed" data-add-sub="${mi}">+ 添加子类别</span>
+        </div>
+      </div>
+    `).join('')
+  }</div>`;
+
+  el.querySelectorAll('[data-del-mod]').forEach(btn => {
+    btn.onclick = () => { setupModules.splice(parseInt(btn.dataset.delMod), 1); renderSetupModules(); };
+  });
+  el.querySelectorAll('[data-del-sub]').forEach(btn => {
+    const [mi, si] = btn.dataset.delSub.split('-').map(Number);
+    btn.onclick = () => { setupModules[mi].subs.splice(si, 1); renderSetupModules(); };
+  });
+  el.querySelectorAll('[data-add-sub]').forEach(btn => {
+    btn.onclick = () => {
+      const mi = parseInt(btn.dataset.addSub);
+      const sub = prompt(`为「${setupModules[mi].name}」添加子类别：`);
+      if (sub && sub.trim()) { setupModules[mi].subs.push(sub.trim()); renderSetupModules(); }
+    };
+  });
+}
+
+function renderMain() {
+  const { monday, friday } = getWeekDates();
+  return `
+  <div class="app-header">
+    <div class="app-title">周报生成器</div>
+    <div class="header-meta">
+      <div class="week-badge">${monday} ～ ${friday}</div>
+      <div class="user-badge" id="open-config">⚙ ${config.userName}</div>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="main-content">
+      ${renderSection('current')}
+      ${renderSection('next')}
+    </div>
+  </div>
+  <div class="sidebar">
+    ${renderHoursCard()}
+    ${renderPreviewCard()}
+  </div>`;
+}
+
+function renderSection(type) {
+  const isCurrent = type === 'current';
+  const tasks = isCurrent ? currentWeekTasks : nextWeekTasks;
+  const title = isCurrent ? '本周工作' : '下周工作';
+  const dotClass = isCurrent ? '' : 'next';
+
+  // Group tasks
+  const grouped = {};
+  for (const t of tasks) {
+    const key = `${t.module}||${t.sub}`;
+    if (!grouped[key]) grouped[key] = { module: t.module, sub: t.sub, tasks: [] };
+    grouped[key].tasks.push(t);
+  }
+
+  const groups = Object.values(grouped);
+
+  // Get module numbers
+  const moduleNums = {};
+  let mn = 1;
+  for (const g of groups) {
+    if (!moduleNums[g.module]) moduleNums[g.module] = mn++;
+  }
+
+  let body = '';
+  let lastMod = null;
+  let lastSub = null;
+
+  for (const g of groups) {
+    if (g.module !== lastMod) {
+      if (lastMod !== null) body += '</div>'; // close sub-group
+      body += `
+        <div class="module-group" data-module="${escHtml(g.module)}">
+        <div class="module-header">
+          <span class="module-num">${moduleNums[g.module]}</span>
+          <span class="module-name">${escHtml(g.module)}</span>
+        </div>`;
+      lastMod = g.module;
+      lastSub = null;
+    }
+    if (g.sub !== lastSub) {
+      if (lastSub !== null) body += `</div>`; // close prev sub
+      body += `<div class="sub-group"><div class="sub-label">${escHtml(g.sub)}</div>`;
+      lastSub = g.sub;
+    }
+    for (const t of g.tasks) {
+      body += renderTaskRow(t, isCurrent);
+    }
+  }
+
+  if (lastSub !== null) body += '</div>';
+  if (lastMod !== null) body += '</div>';
+
+  if (!groups.length) body = `<div class="empty-state">暂无任务，点击下方按钮添加</div>`;
+
+  return `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="section-dot ${dotClass}"></span>
+        ${title}
+      </div>
+      ${isCurrent ? `<div style="display:flex;gap:6px"><input type="file" id="import-file-input" accept=".txt,.md" style="display:none" /><button class="btn btn-ghost" id="btn-import-report" style="font-size:12px;padding:4px 10px">↑ 导入上周周报</button><button class="btn btn-ghost btn-clear" id="btn-clear-all" style="font-size:12px;padding:4px 10px">✕ 清空</button></div>` : ''}
+    </div>
+    <div class="section-body" id="section-${type}">
+      ${body}
+      <div class="add-task-bar">
+        <select class="add-select" id="add-module-${type}">
+          <option value="">选择模块</option>
+          ${(config.modules || []).map(m => `<option value="${escHtml(m.name)}">${escHtml(m.name)}</option>`).join('')}
+        </select>
+        <select class="add-select" id="add-sub-${type}">
+          <option value="">选择子类别</option>
+        </select>
+        <button class="btn btn-ghost" id="add-task-btn-${type}">+ 添加任务</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderTaskRow(task, isCurrent) {
+  const p = parseInt(task.progress) || 0;
+  const color = getProgressColor(p);
+  const statusOpts = getStatusOptions(task.progress);
+
+  if (!isCurrent) {
+    return `
+    <div class="task-row next-task" data-id="${task.id}">
+      <input class="task-input" placeholder="任务描述（支持《项目名》格式）" value="${escHtml(task.desc || '')}" data-field="desc" data-id="${task.id}" />
+      <div class="progress-group">
+        <div class="progress-input-wrap">
+          <input class="progress-input" type="number" min="0" max="100" value="${task.progress || ''}" placeholder="0" data-field="progress" data-id="${task.id}" />
+          <span class="progress-pct">%</span>
+        </div>
+        <div class="progress-mini-bar"><div class="progress-mini-fill" style="width:${p}%;background:${color}"></div></div>
+      </div>
+      <button class="task-action-btn task-delete" data-del="${task.id}" data-type="next">×</button>
+    </div>`;
+  }
+
+  const statusSelectHtml = `
+    <div class="status-wrap">
+      <select class="status-select" data-field="status" data-id="${task.id}">
+        ${statusOpts.map(opt => `<option value="${opt.value}" ${task.status === opt.value ? 'selected' : ''}>${opt.value}</option>`).join('')}
+        <option value="__custom__" ${!statusOpts.find(o=>o.value===task.status) && task.status ? 'selected' : ''}>自定义...</option>
+      </select>
+      ${!statusOpts.find(o=>o.value===task.status) && task.status ? `<input class="task-input" style="margin-top:4px;font-size:11px" value="${escHtml(task.status)}" data-field="status-custom" data-id="${task.id}" />` : ''}
+    </div>`;
+
+  return `
+  <div class="task-row" data-id="${task.id}">
+    <input class="task-input" placeholder="任务描述（支持《项目名》格式）" value="${escHtml(task.desc || '')}" data-field="desc" data-id="${task.id}" />
+    <div class="progress-group">
+      <div class="progress-input-wrap">
+        <input class="progress-input" type="number" min="0" max="100" value="${task.progress || ''}" placeholder="0" data-field="progress" data-id="${task.id}" />
+        <span class="progress-pct">%</span>
+      </div>
+      <div class="progress-mini-bar"><div class="progress-mini-fill" style="width:${p}%;background:${color}"></div></div>
+    </div>
+    ${statusSelectHtml}
+    <div class="hours-input-wrap">
+      <input class="hours-input" type="number" min="0" step="0.5" value="${task.hours || ''}" placeholder="0" data-field="hours" data-id="${task.id}" />
+      <span class="hours-suffix">h</span>
+    </div>
+    <div class="task-actions">
+      <button class="task-action-btn task-clone" data-clone="${task.id}" data-module="${escHtml(task.module)}" data-sub="${escHtml(task.sub)}" title="添加同类任务">+</button>
+      <button class="task-action-btn task-delete" data-del="${task.id}" data-type="current" title="删除任务">×</button>
+    </div>
+  </div>`;
+}
+
+function renderHoursCard() {
+  const used = calcTotalHours();
+  const total = config.totalHours || 40;
+  const remaining = total - used;
+  const pct = Math.min((used / total) * 100, 100);
+
+  let color, statusText, statusClass;
+  if (used < total) {
+    color = '#b85c00'; statusText = `⚠ 还有 ${remaining.toFixed(1)}h 未分配`; statusClass = 'warn';
+  } else if (used === total) {
+    color = '#1a4a2e'; statusText = '✓ 工时分配刚好满载'; statusClass = 'ok';
+  } else {
+    color = '#9b1c1c'; statusText = `⚡ 超出 ${(used - total).toFixed(1)}h，工作量超载`; statusClass = 'danger';
+  }
+
+  return `
+  <div class="hours-card">
+    <div class="card-title">工时分配</div>
+    <div class="hours-display">
+      <span class="hours-used" style="color:${color}">${used}</span>
+      <span class="hours-sep">/</span>
+      <span class="hours-total-label" id="hours-total-display">${total}</span>
+      <span style="font-size:13px;color:var(--text3);margin-left:4px">h</span>
+    </div>
+    <div class="hours-remaining" style="color:${color}">${remaining >= 0 ? `剩余 ${remaining.toFixed(1)}h` : `超出 ${Math.abs(remaining).toFixed(1)}h`}</div>
+    <div class="hours-bar-track">
+      <div class="hours-bar-fill" style="width:${pct}%;background:${color}"></div>
+    </div>
+    <div class="hours-status" style="background:var(--${statusClass}-light);color:var(--${statusClass})">${statusText}</div>
+    <div class="total-hours-row">
+      <span class="total-hours-label">总工时：</span>
+      <input class="total-hours-input" type="number" id="total-hours-input" value="${total}" min="1" />
+      <span style="font-size:12px;color:var(--text3)">h / 周</span>
+    </div>
+  </div>`;
+}
+
+function renderPreviewCard() {
+  const preview = generateReport();
+  return `
+  <div class="preview-card">
+    <div class="card-title">预览 & 导出</div>
+    <div class="preview-content" id="preview-text">${escHtml(preview)}</div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-copy">⎘ 复制纯文本</button>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btn-export-md">↓ 导出 .txt</button>
+        <button class="btn btn-accent" id="btn-export-config">↓ 导出配置</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Bind Events ──────────────────────────────────────────────────────────────
+function bindMainEvents() {
+  // Config
+  document.getElementById('open-config')?.addEventListener('click', openConfigModal);
+
+  // Module selects
+  ['current', 'next'].forEach(type => {
+    const modSel = document.getElementById(`add-module-${type}`);
+    const subSel = document.getElementById(`add-sub-${type}`);
+    const addBtn = document.getElementById(`add-task-btn-${type}`);
+
+    modSel?.addEventListener('change', () => {
+      const mod = config.modules.find(m => m.name === modSel.value);
+      subSel.innerHTML = '<option value="">选择子类别</option>' +
+        (mod ? mod.subs.map(s => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('') : '');
+    });
+
+    addBtn?.addEventListener('click', () => {
+      const module = modSel.value;
+      const sub = subSel.value;
+      if (!module || !sub) { showToast('请先选择模块和子类别'); return; }
+      const task = { id: uid(), module, sub, desc: '', progress: 0, status: '进行中', hours: '' };
+      if (type === 'current') currentWeekTasks.push(task);
+      else nextWeekTasks.push({ id: uid(), module, sub, desc: '', progress: 0, status: '进行中' });
+      saveTasks();
+      render();
+    });
+  });
+
+  // Task field edits
+  document.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('input', handleFieldInput);
+    el.addEventListener('change', handleFieldChange);
+  });
+
+  // Clone (add same module/sub task)
+  document.querySelectorAll('[data-clone]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const module = btn.dataset.module;
+      const sub = btn.dataset.sub;
+      currentWeekTasks.push({ id: uid(), module, sub, desc: '', progress: 0, status: '进行中', hours: '' });
+      saveTasks();
+      render();
+    });
+  });
+
+  // Delete
+  document.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.del;
+      const type = btn.dataset.type;
+      if (type === 'current') currentWeekTasks = currentWeekTasks.filter(t => t.id !== id);
+      else nextWeekTasks = nextWeekTasks.filter(t => t.id !== id);
+      saveTasks();
+      render();
+    });
+  });
+
+  // Total hours
+  document.getElementById('total-hours-input')?.addEventListener('input', (e) => {
+    config.totalHours = parseFloat(e.target.value) || 40;
+    saveConfig();
+    updateHoursDisplay();
+  });
+
+  // Buttons
+  document.getElementById('btn-copy')?.addEventListener('click', () => {
+    navigator.clipboard.writeText(generateReport()).then(() => showToast('已复制到剪贴板 ✓'));
+  });
+
+  document.getElementById('btn-export-md')?.addEventListener('click', exportMd);
+  document.getElementById('btn-export-config')?.addEventListener('click', exportConfig);
+
+  // Import report
+  const importBtn = document.getElementById('btn-import-report');
+  const importInput = document.getElementById('import-file-input');
+  importBtn?.addEventListener('click', () => importInput?.click());
+  importInput?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      importLastWeekReport(evt.target.result);
+      importInput.value = ''; // reset so same file can be re-imported
+    };
+    reader.readAsText(file);
+  });
+
+  // Clear all tasks
+  document.getElementById('btn-clear-all')?.addEventListener('click', () => {
+    if (!confirm('确定要清空所有本周和下周的任务吗？')) return;
+    currentWeekTasks = [];
+    nextWeekTasks = [];
+    saveTasks();
+    render();
+    showToast('已清空所有任务');
+  });
+}
+
+function handleFieldInput(e) {
+  const { field, id } = e.target.dataset;
+  if (!field || !id) return;
+
+  const task = currentWeekTasks.find(t => t.id === id) || nextWeekTasks.find(t => t.id === id);
+  if (!task) return;
+
+  if (field === 'desc') { task.desc = e.target.value; }
+  else if (field === 'hours') { task.hours = e.target.value; }
+  else if (field === 'progress') {
+    const p = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+    task.progress = p;
+    // Update mini bar
+    const row = e.target.closest('.task-row');
+    if (row) {
+      const fill = row.querySelector('.progress-mini-fill');
+      if (fill) { fill.style.width = p + '%'; fill.style.background = getProgressColor(p); }
+      // Update status select options
+      updateStatusSelect(row, task);
+    }
+  }
+
+  if (field === 'hours' || field === 'progress') updateHoursDisplay();
+  updatePreview();
+  saveTasks();
+
+  // Sync unfinished current tasks to next week and refresh next week section
+  if (currentWeekTasks.find(t => t.id === id) && field === 'progress') {
+    syncUnfinishedToNextWeek();
+    saveTasks();
+    const nextSection = document.getElementById('section-next');
+    if (nextSection) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = renderSection('next');
+      const newBody = tmp.querySelector('#section-next');
+      if (newBody) {
+        nextSection.innerHTML = newBody.innerHTML;
+        // Re-bind events for next week section
+        nextSection.querySelectorAll('[data-field]').forEach(el => {
+          el.addEventListener('input', handleFieldInput);
+          el.addEventListener('change', handleFieldChange);
+        });
+        nextSection.querySelectorAll('[data-del]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            nextWeekTasks = nextWeekTasks.filter(t => t.id !== btn.dataset.del);
+            saveTasks();
+            render();
+          });
+        });
+        // Re-bind add task bar for next week
+        const modSel = nextSection.querySelector('#add-module-next');
+        const subSel = nextSection.querySelector('#add-sub-next');
+        const addBtn = nextSection.querySelector('#add-task-btn-next');
+        modSel?.addEventListener('change', () => {
+          const mod = config.modules.find(m => m.name === modSel.value);
+          subSel.innerHTML = '<option value="">选择子类别</option>' +
+            (mod ? mod.subs.map(s => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('') : '');
+        });
+        addBtn?.addEventListener('click', () => {
+          const module = modSel.value;
+          const sub = subSel.value;
+          if (!module || !sub) { showToast('请先选择模块和子类别'); return; }
+          nextWeekTasks.push({ id: uid(), module, sub, desc: '', progress: 0, status: '进行中' });
+          saveTasks();
+          render();
+        });
+      }
+    }
+  }
+}
+
+function handleFieldChange(e) {
+  const { field, id } = e.target.dataset;
+  if (!field || !id) return;
+  const task = currentWeekTasks.find(t => t.id === id) || nextWeekTasks.find(t => t.id === id);
+  if (!task) return;
+
+  if (field === 'status') {
+    if (e.target.value === '__custom__') {
+      // Show custom input
+      const wrap = e.target.closest('.status-wrap');
+      if (wrap && !wrap.querySelector('[data-field="status-custom"]')) {
+        const inp = document.createElement('input');
+        inp.className = 'task-input';
+        inp.style.cssText = 'margin-top:4px;font-size:11px';
+        inp.placeholder = '输入自定义状态';
+        inp.dataset.field = 'status-custom';
+        inp.dataset.id = id;
+        inp.addEventListener('input', (ev) => { task.status = ev.target.value; updatePreview(); saveTasks(); });
+        wrap.appendChild(inp);
+        inp.focus();
+      }
+    } else {
+      task.status = e.target.value;
+      updatePreview();
+      saveTasks();
+    }
+  }
+}
+
+function updateStatusSelect(row, task) {
+  const sel = row.querySelector('[data-field="status"]');
+  if (!sel) return;
+  const opts = getStatusOptions(task.progress);
+  const currentStatus = task.status;
+  const defaultStatus = getDefaultStatus(task.progress);
+
+  // Check if current status is still valid
+  const isStillValid = opts.find(o => o.value === currentStatus);
+  if (!isStillValid) { task.status = defaultStatus; }
+
+  sel.innerHTML = opts.map(opt => `<option value="${opt.value}" ${task.status === opt.value ? 'selected' : ''}>${opt.value}</option>`).join('') +
+    `<option value="__custom__">自定义...</option>`;
+}
+
+function updateHoursDisplay() {
+  const card = document.querySelector('.hours-card');
+  if (!card) return;
+  card.outerHTML.replace(/.*/, '');
+  // Re-render hours card in sidebar
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar) {
+    const hc = sidebar.querySelector('.hours-card');
+    if (hc) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = renderHoursCard();
+      hc.replaceWith(tmp.firstElementChild);
+      // Re-bind total hours input
+      document.getElementById('total-hours-input')?.addEventListener('input', (e) => {
+        config.totalHours = parseFloat(e.target.value) || 40;
+        saveConfig();
+        updateHoursDisplay();
+      });
+    }
+  }
+}
+
+function updatePreview() {
+  const el = document.getElementById('preview-text');
+  if (el) el.textContent = generateReport();
+}
+
+function exportMd() {
+  const { monday, friday } = getWeekDates();
+  const content = generateReport();
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${config.userName}.txt`;
+  a.click();
+  showToast(`已导出 ${friday}/${config.userName}.txt`);
+  exportConfig(true);
+}
+
+function exportConfig(silent = false) {
+  const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'weekly-report-config.json';
+  a.click();
+  if (!silent) showToast('配置文件已导出');
+}
+
+// ─── Config Modal ─────────────────────────────────────────────────────────────
+function openConfigModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+  <div class="modal">
+    <div class="modal-title">⚙ 用户配置</div>
+    <div class="form-group">
+      <label class="form-label">用户名</label>
+      <input class="form-input" id="cfg-name" value="${escHtml(config.userName)}" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">默认总工时（h）</label>
+      <input class="form-input" id="cfg-hours" type="number" value="${config.totalHours || 40}" min="1" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">模块与子类别</label>
+      <div id="cfg-modules-list"></div>
+      <div class="add-module-row">
+        <input class="form-input" id="cfg-new-module" placeholder="新模块名称" style="flex:1" />
+        <button class="btn btn-secondary" id="cfg-add-module" style="white-space:nowrap;padding:8px 14px;font-size:12px">+ 添加</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cfg-cancel">取消</button>
+      <button class="btn btn-primary" id="cfg-save">保存</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+
+  let cfgModules = JSON.parse(JSON.stringify(config.modules || []));
+
+  function renderCfgModules() {
+    const el = document.getElementById('cfg-modules-list');
+    if (!el) return;
+    el.innerHTML = `<div class="module-config-list" style="margin-bottom:10px">${
+      cfgModules.map((m, mi) => `
+        <div class="module-config-item">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div class="module-config-name">${escHtml(m.name)}</div>
+            <span style="font-size:11px;color:var(--text3);cursor:pointer" data-del-mod="${mi}">✕</span>
+          </div>
+          <div class="sub-tags">
+            ${m.subs.map((s,si) => `<span class="sub-tag">${escHtml(s)}<span class="sub-tag-del" data-del-sub="${mi}-${si}">×</span></span>`).join('')}
+            <span class="sub-tag" style="cursor:pointer;border-style:dashed" data-add-sub="${mi}">+ 添加</span>
+          </div>
+        </div>
+      `).join('')
+    }</div>`;
+
+    el.querySelectorAll('[data-del-mod]').forEach(btn => {
+      btn.onclick = () => { cfgModules.splice(parseInt(btn.dataset.delMod), 1); renderCfgModules(); };
+    });
+    el.querySelectorAll('[data-del-sub]').forEach(btn => {
+      const [mi, si] = btn.dataset.delSub.split('-').map(Number);
+      btn.onclick = () => { cfgModules[mi].subs.splice(si, 1); renderCfgModules(); };
+    });
+    el.querySelectorAll('[data-add-sub]').forEach(btn => {
+      btn.onclick = () => {
+        const mi = parseInt(btn.dataset.addSub);
+        const sub = prompt(`为「${cfgModules[mi].name}」添加子类别：`);
+        if (sub && sub.trim()) { cfgModules[mi].subs.push(sub.trim()); renderCfgModules(); }
+      };
+    });
+  }
+
+  renderCfgModules();
+
+  document.getElementById('cfg-add-module').onclick = () => {
+    const inp = document.getElementById('cfg-new-module');
+    const name = inp.value.trim();
+    if (!name) return;
+    cfgModules.push({ name, subs: [] });
+    inp.value = '';
+    renderCfgModules();
+  };
+
+  document.getElementById('cfg-cancel').onclick = () => overlay.remove();
+  document.getElementById('cfg-save').onclick = () => {
+    config.userName = document.getElementById('cfg-name').value.trim() || config.userName;
+    config.totalHours = parseInt(document.getElementById('cfg-hours').value) || 40;
+    config.modules = cfgModules;
+    saveConfig();
+    overlay.remove();
+    render();
+    showToast('配置已保存 ✓');
+  };
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+if (loadConfig()) { loadTasks(); }
+render();
+</script>
+</body>
+</html>
